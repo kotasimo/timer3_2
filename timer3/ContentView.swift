@@ -20,6 +20,7 @@ struct ContentView: View {
     @State private var totalFocus: TimeInterval = 0
     @State private var totalRest: TimeInterval = 0
     @State private var isRunning: Bool = false
+    @State private var lastTickDate: Date = Date()
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     private func formatTime(_ t: TimeInterval) -> String {
         let total = Int(t)
@@ -47,6 +48,7 @@ struct ContentView: View {
                 mode = (mode == .focus) ? .rest : .focus
                 elapsed = 0
                 isRunning = true
+                lastTickDate = Date()
             } label: {
                 VStack{
                     Text(mode == .focus ? "集中" : "休憩")
@@ -78,9 +80,12 @@ struct ContentView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()
-        .onReceive(timer) { _ in
+        .onReceive(timer) { now in
+            let delta = now.timeIntervalSince(lastTickDate)
+            lastTickDate = now
+  
             if isRunning {
-                elapsed += 1
+                elapsed += delta
             }
         }
         
